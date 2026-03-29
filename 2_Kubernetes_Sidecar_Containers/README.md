@@ -1,28 +1,36 @@
 # Kubernetes Sidecar Containers
 
 ## Overview
-This section explores the sidecar container pattern in Kubernetes. Learn how to deploy auxiliary containers that run alongside your main application containers.
+- Create a pod named `webserver`.
 
-## Topics Covered
-- Sidecar pattern implementation
-- Logging sidecars
-- Monitoring sidecars
-- Service mesh proxies (Envoy)
-- Pod-level networking patterns
+- Create an `emptyDir` volume named `shared-logs`.
 
-## Key Objectives
-- Understand the sidecar design pattern
-- Implement logging and monitoring sidecars
-- Configure intra-pod communication
-- Share volumes between main and sidecar containers
+- Create two containers from nginx and ubuntu images with latest tag only and remember to mention tag i.e nginx:latest, nginx container name should be `nginx-container` and ubuntu container name should be `sidecar-container` on `webserver` pod.
 
-## Use Cases
-- Centralized logging
-- Health monitoring
-- Service mesh integration
-- Configuration management
+- Add command on sidecar-container `"sh","-c","while true; do cat /var/log/nginx/access.log /var/log/nginx/error.log; sleep 30; done"`
 
-## Resources
-- [Kubernetes Documentation - Pods](https://kubernetes.io/docs/concepts/workloads/pods/)
-- Sidecar deployment examples
-- Best practices guide
+- Mount the volume `shared-logs` on both containers at location `/var/log/nginx`, all containers should be up and running.
+
+## Solution
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webserver
+spec:
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+    - name: sidecar-container
+      image: ubuntu:latest
+      command: ["sh", "-c", "while true; do cat /var/log/nginx/access.log /var/log/nginx/error.log; sleep 30; done"]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+```
