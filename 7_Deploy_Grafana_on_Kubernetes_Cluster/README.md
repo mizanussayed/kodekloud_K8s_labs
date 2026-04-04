@@ -1,35 +1,47 @@
 # Deploy Grafana on Kubernetes Cluster
 
 ## Overview
-This section covers the deployment of Grafana monitoring and visualization platform on a Kubernetes cluster for metrics dashboards and observability.
+The Nautilus DevOps teams is planning to set up a Grafana tool to collect and analyze analytics from some applications. They are planning to deploy it on Kubernetes cluster. Below you can find more details.
 
-## Topics Covered
-- Grafana container deployment
-- Data source configuration
-- Dashboard creation
-- Prometheus integration
-- Persistent storage setup
-- Service exposure
-- Authentication and authorization
-- Plugin management
+1.) Create a deployment named grafana-deployment-xfusion using any grafana image for Grafana app. Set other parameters as per your choice.
 
-## Key Objectives
-- Deploy Grafana on Kubernetes
-- Configure data sources (Prometheus, etc.)
-- Create monitoring dashboards
-- Set up persistence for Grafana configuration
-- Expose Grafana UI
-- Implement user management
-- Monitor Kubernetes metrics
+2.) Create NodePort type service with nodePort 32000 to expose the app.
 
-## Architecture Components
-- Grafana: Visualization and dashboarding
-- Data Sources: Prometheus, Loki, etc.
-- Dashboards: Custom and pre-built
-- Storage: PersistentVolume for data
+## Steps to Deploy Grafana on Kubernetes Cluster
+1. Create a deployment named `grafana-deployment-xfusion` & service using the following command:
 
-## Resources
-- [Grafana Official Docker Image](https://hub.docker.com/r/grafana/grafana)
-- [Grafana Documentation](https://grafana.com/docs/)
-- [Prometheus Integration](https://prometheus.io/)
-- Deployment manifests and dashboard definitions
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment-xfusion
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: grafana
+    template:
+        metadata:
+        labels:
+            app: grafana
+        spec:
+        containers:
+        - name: grafana
+            image: grafana/grafana:latest
+            ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service-xfusion
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 32000
+```
